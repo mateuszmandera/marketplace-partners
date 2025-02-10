@@ -62,7 +62,7 @@ Configuring Zulip. This might take a few minutes.
 
 EOM
 
-sudo service nginx stop
+sudo systemctl is-active --quiet nginx && sudo systemctl stop nginx
 
 ./zulip/scripts/setup/install ${SERVICES_FLAGS} --certbot --email="$email" --hostname="$hostname" --no-dist-upgrade
 if [ "$?" = 1 ]; then
