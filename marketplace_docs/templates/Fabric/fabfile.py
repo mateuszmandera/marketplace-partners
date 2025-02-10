@@ -71,6 +71,7 @@ def install_pkgs():
     print("--------------------------------------------------")
     print("Installing apt packages in packages.txt")
     print("--------------------------------------------------")
+    run("apt-get remove command-not-found -y")
     run("apt-get -o DPkg::Lock::Timeout=120 -qqy update")
     run(
         'DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=120 -qqy -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade'
