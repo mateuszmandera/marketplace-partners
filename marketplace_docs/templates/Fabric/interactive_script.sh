@@ -62,8 +62,7 @@ EOM
 
 sudo service nginx stop
 
-array=(./zulip-server-*)
-"${array[0]}"/scripts/setup/install ${SERVICES_FLAGS} --certbot --email="$email" --hostname="$hostname" --no-dist-upgrade
+./scripts/setup/install ${SERVICES_FLAGS} --certbot --email="$email" --hostname="$hostname" --no-dist-upgrade
 if [ "$?" = 1 ]; then
     echo "For troubleshooting see https://zulip.readthedocs.io/en/stable/production/troubleshooting.html."
     echo -e "\n"

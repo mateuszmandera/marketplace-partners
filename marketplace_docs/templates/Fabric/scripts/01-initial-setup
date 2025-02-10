@@ -13,11 +13,11 @@ echo 'APT::Install-Recommends 0;' >>/etc/apt/apt.conf.d/01norecommends &&
 	locale-gen en_US.UTF-8 &&
 	DEBIAN_FRONTEND=noninteractive apt-get -qy -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" dist-upgrade
 
-wget https://download.zulip.com/server/zulip-server-latest.tar.gz
-tar -xf zulip-server-latest.tar.gz
+apt install git gettext -qqy
+git clone https://github.com/zulip/zulip.git
+cd zulip
 
-array=(./zulip-server-*)
-"${array[0]}"/scripts/setup/install --email=mail@example.com --hostname "$(hostname -f)" --no-init-db --self-signed-cert
+./scripts/setup/install --email=mail@example.com --hostname "$(hostname -f)" --no-init-db --self-signed-cert
 
 rm -f /etc/zulip/zulip-secrets.conf /etc/zulip/settings.py
 rm -f /var/lib/rabbitmq/.erlang.cookie

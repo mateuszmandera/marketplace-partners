@@ -19,8 +19,8 @@ def clean_up():
     run("history -c")
     run("cat /dev/null > /root/.bash_history")
     run("unset HISTFILE")
-    run("apt-get -y autoremove")
-    run("apt-get -y autoclean")
+    run("apt-get -qqy autoremove")
+    run("apt-get -qqy autoclean")
     run("find /var/log -mtime -1 -type f -exec truncate -s 0 {} \;")
     run("rm -rf /var/log/*.gz /var/log/*.[0-9] /var/log/*-????????")
     run("rm -rf /var/lib/cloud/instances/*")
@@ -71,7 +71,7 @@ def install_pkgs():
     print("--------------------------------------------------")
     print("Installing apt packages in packages.txt")
     print("--------------------------------------------------")
-    run("apt-get remove command-not-found -y")
+    run("apt-get remove command-not-found -o DPkg::Lock::Timeout=120 -qqy")
     run("apt-get -o DPkg::Lock::Timeout=120 -qqy update")
     run(
         'DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=120 -qqy -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade'
