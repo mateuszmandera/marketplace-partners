@@ -23,6 +23,36 @@ while  [ -z "${email}" ] || [ -z "${hostname}" ]; do
     echo ""
 done
 
+SERVICES_FLAGS=""
+echo "Would you like to automatically register your server for push notifications?"
+echo "For details on why a centralized push notification service is necessary, see:"
+echo "    <https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#why-a-push-notification-service-is-necessary>"
+read -r -p "Answer [Y/n]: " push_prompt
+case "${push_prompt,,}" in
+    "" | y | yes)
+        SERVICES_FLAGS="--push-notifications"
+
+        echo "Do you agree for your server to submit aggregate usage statistics to the push notification service?"
+        echo "For details, see:"
+        echo "    <https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-usage-statistics>"
+        read -r -p "Answer [Y/n]: " stats_prompt
+        case "${stats_prompt,,}" in
+            n | no)
+                echo "Upload of aggregate usage statistics will not be enabled."
+                SERVICES_FLAGS="${SERVICES_FLAGS} --no-submit-usage-statistics"
+                ;;
+            *)
+                echo "Upload of aggregate usage statistics will be enabled."
+                ;;
+        esac
+        ;;
+    *)
+        echo "Push notifications will not be enabled; continuing with installation..."
+        ENABLE_PUSH_NOTIFICATIONS=0
+        ;;
+esac
+sleep 1.5
+
 cat <<EOM
 
 Configuring Zulip. This might take a few minutes.
@@ -33,7 +63,7 @@ EOM
 sudo service nginx stop
 
 array=(./zulip-server-*)
-"${array[0]}"/scripts/setup/install --certbot --email="$email" --hostname="$hostname" --no-dist-upgrade
+"${array[0]}"/scripts/setup/install ${SERVICES_FLAGS} --certbot --email="$email" --hostname="$hostname" --no-dist-upgrade
 if [ "$?" = 1 ]; then
     echo "For troubleshooting see https://zulip.readthedocs.io/en/stable/production/troubleshooting.html."
     echo -e "\n"
