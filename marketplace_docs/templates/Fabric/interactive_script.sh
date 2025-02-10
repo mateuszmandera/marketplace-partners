@@ -30,7 +30,7 @@ Configuring Zulip. This might take a few minutes.
 
 EOM
 
-sudo service nginx stop
+sudo systemctl is-active --quiet nginx && sudo systemctl stop nginx
 
 array=(./zulip-server-*)
 "${array[0]}"/scripts/setup/install --certbot --email="$email" --hostname="$hostname" --no-dist-upgrade
