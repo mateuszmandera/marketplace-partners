@@ -77,7 +77,16 @@ def install_pkgs():
     # due to missing command database files, and it's not essential in this environment.
     run("apt-get remove command-not-found -o DPkg::Lock::Timeout=120 -qqy")
 
-    run("apt-get -o DPkg::Lock::Timeout=120 -qqy update")
+    # A freshly booted droplet runs apt in the background, and only one
+    # apt can update the package lists at a time.  apt-get gives up right
+    # away when another one is running, so retry until it succeeds.
+    run(
+        """timeout 600 bash -c 'until apt-get -o DPkg::Lock::Timeout=120 -qqy update; do
+        echo "apt-get update failed, retrying..."
+        sleep 10
+    done'"""
+    )
+
     run(
         'DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=120 -qqy -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade'
     )
@@ -140,18 +149,13 @@ def disable_conflicting_services():
     # once interactive_script.sh completes successfully.
     #
     # For more details see https://chat.zulip.org/#narrow/stream/3-backend/topic/apt-daily
-    run("systemctl disable apt-daily.timer apt-daily-upgrade.timer")
+    run("systemctl disable --now apt-daily.timer apt-daily-upgrade.timer")
 
-    print("Disabled apt-daily timers. Waiting for ongoing tasks to finish...")
-    run("""
-    timeout 300 bash -c '
-    while systemctl is-active --quiet apt-daily.service apt-daily-upgrade.service; do
-        echo "Waiting for apt-daily or apt-daily-upgrade tasks to finish..."
-        sleep 5
-    done
-    '
-    """)
-    print("Finished waiting for apt-related tasks (or timed out).")
+    # Disabling a timer has no effect on the service job it already
+    # triggered on boot.  Stop those jobs as well; this also cancels
+    # apt-daily-upgrade.service while it is queued behind
+    # apt-daily.service.
+    run("systemctl stop apt-daily.service apt-daily-upgrade.service")
 
 @task
 def build_image():
